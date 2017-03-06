@@ -1,11 +1,11 @@
 CC          = g++
 CFLAGS      = -std=c++11 -Wall -pedantic -ggdb
 OBJS        = player.o board.o
-PLAYERNAME  = player
+TheOneTrueWeasel  = player
 
-all: $(PLAYERNAME) testgame
+all: $(TheOneTrueWeasel) testgame
 
-$(PLAYERNAME): $(OBJS) wrapper.o
+$(TheOneTrueWeasel): $(OBJS) wrapper.o
 	$(CC) -o $@ $^
 
 testgame: testgame.o

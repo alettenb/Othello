@@ -2,6 +2,8 @@
 #define __BOARD_H__
 
 #include <bitset>
+#include <stdlib.h>
+#include <time.h>
 #include "common.hpp"
 using namespace std;
 
