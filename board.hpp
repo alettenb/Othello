@@ -30,7 +30,8 @@ public:
     int count(Side side);
     int countBlack();
     int countWhite();
-
+    int cornersOccupied(Side side);
+    int weightedCount(Side s);
     void setBoard(char data[]);
 };
 

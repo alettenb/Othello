@@ -22,4 +22,34 @@ public:
     void setY(int y) { this->y = y; }
 };
 
+class Tuple
+{
+public:
+    Move * move;
+    int value;
+    Tuple(Move* a, int b) {
+        move = a;
+        value = b;
+    }
+    ~Tuple() {
+
+    }
+    int getVal() {
+        return value;
+    }
+    Move* getMove() {
+        return move;
+    }
+
+    void setMove(Move * m) {
+        move = m;
+    }
+
+    void setVal(int v) {
+        value = v;
+    }
+};
+
 #endif
+
+

@@ -44,12 +44,12 @@ Player::~Player() {
 // }
 
 
-std::vector<Move*> Player::makeListOfMoves(Board * bo) {
+std::vector<Move*> Player::makeListOfMoves(Board * bo, Side s) {
 	std::vector<Move*> moves;
 	for(int i = 0; i < 8; i++) {
 		for(int j = 0; j < 8; j++) {
 			Move* m = new Move(i, j);
-			if(bo->checkMove(m, yourSide)) {
+			if(bo->checkMove(m, s)) {
 				moves.push_back(m);
 			}
 			else {
@@ -102,40 +102,172 @@ int Player::HeuristicFunction(Move* move, Side side, Side side2) {
 // }
 
 
-Move * Player::minimax() {
-	std::vector<Move *> initMoves = makeListOfMoves(b);
-	std::vector<int> heuristicNums;
-	for(unsigned int i = 0; i < initMoves.size(); i++) {
-		Board * newBoard = b->copy();
-		newBoard->doMove(initMoves[i], yourSide);
-		if(newBoard->hasMoves(yourSide)) {
-			std::vector<Move *> newMoves = makeListOfMoves(newBoard);
-			int minHeuristic = HeuristicFunction(newMoves[0], yourSide, otherSide);
-			for(unsigned int j = 1; j < newMoves.size(); j++) {
-				if(HeuristicFunction(newMoves[j], yourSide, otherSide) < minHeuristic)
-					minHeuristic = HeuristicFunction(newMoves[j], yourSide, otherSide);
+// Move * Player::minimax() {
+// 	std::vector<Move *> initMoves = makeListOfMoves(b);
+// 	std::vector<int> heuristicNums;
+// 	for(unsigned int i = 0; i < initMoves.size(); i++) {
+// 		Board * newBoard = b->copy();
+// 		newBoard->doMove(initMoves[i], yourSide);
+// 		if(newBoard->hasMoves(yourSide)) {
+// 			std::vector<Move *> newMoves = makeListOfMoves(newBoard);
+// 			int minHeuristic = HeuristicFunction(newMoves[0], yourSide, otherSide);
+// 			for(unsigned int j = 1; j < newMoves.size(); j++) {
+// 				if(HeuristicFunction(newMoves[j], yourSide, otherSide) < minHeuristic)
+// 					minHeuristic = HeuristicFunction(newMoves[j], yourSide, otherSide);
+// 			}
+// 			heuristicNums.push_back(minHeuristic);
+// 		} 
+// 		else 
+// 			heuristicNums.push_back(-65); //This is an impossible value for an 8x8 Othello Board 
+// 	}
+// 	int maximum = heuristicNums[0];
+// 	int index = 0;
+// 	for(int i = 0; i < heuristicNums.size(); i++) {
+// 		if((initMoves[i]->getX() == 0 && initMoves[i]->getY() == 0) || (initMoves[i]->getX() == 7 && initMoves[i]->getY() == 0) 
+// 			|| (initMoves[i]->getX() == 0 && initMoves[i]->getY() == 7) || (initMoves[i]->getX() == 7 && initMoves[i]->getY() == 7)) {
+
+// 			b->doMove(initMoves[i], yourSide);
+// 			return initMoves[i];
+// 		}
+// 		else if(heuristicNums[i] > maximum) {
+// 			index = i;
+// 			maximum = heuristicNums[i];
+// 		}
+// 	}
+// 	return initMoves[index];
+
+// }
+
+
+
+
+Tuple Player::absoluteAlphaBeta(Board* currentBoard, int depth, int a, int b, Side yourPlayer) {
+	if(depth == 0){
+		return Tuple(nullptr, currentBoard->count(yourSide) - currentBoard->count(otherSide));
+
+	}
+	
+	if(yourPlayer == yourSide) {
+		Tuple v = Tuple(nullptr,-10000);
+		std::vector<Move*> possMoves = makeListOfMoves(currentBoard, yourPlayer);
+		if(possMoves.size() == 0) {
+			Tuple test = absoluteAlphaBeta(currentBoard, depth - 1, a, b, otherSide);
+			test.setMove(nullptr);
+			v = test;
+			a = std::max(a, v.getVal());
+
+		}
+		for(unsigned int i = 0; i < possMoves.size(); i++) {
+			Board* b2 = currentBoard->copy();
+			b2->doMove(possMoves[i], yourSide);
+			Tuple test = absoluteAlphaBeta(b2, depth - 1, a, b, otherSide);
+			test.setMove(possMoves[i]);
+			
+
+			if(test.getVal() > v.getVal()) {
+				v = test;
 			}
-			heuristicNums.push_back(minHeuristic);
-		} 
-		else 
-			heuristicNums.push_back(-65); //This is an impossible value for an 8x8 Othello Board 
-	}
-	int maximum = heuristicNums[0];
-	int index = 0;
-	for(int i = 0; i < heuristicNums.size(); i++) {
-		if((initMoves[i]->getX() == 0 && initMoves[i]->getY() == 0) || (initMoves[i]->getX() == 7 && initMoves[i]->getY() == 0) 
-			|| (initMoves[i]->getX() == 0 && initMoves[i]->getY() == 7) || (initMoves[i]->getX() == 7 && initMoves[i]->getY() == 7)) {
+			a = std::max(a, v.getVal());
+			if(b <= a) {
+				break;
+			}
 
-			b->doMove(initMoves[i], yourSide);
-			return initMoves[i];
 		}
-		else if(heuristicNums[i] > maximum) {
-			index = i;
-			maximum = heuristicNums[i];
-		}
+		return v;
 	}
-	return initMoves[index];
+	else {
+		Tuple v = Tuple(nullptr, 10000);
+		std::vector<Move*> possMoves = makeListOfMoves(currentBoard, yourSide);
+		if(possMoves.size() == 0) {
+			Tuple test = absoluteAlphaBeta(currentBoard, depth - 1, a, b, yourSide);
+			test.setMove(nullptr);
+			v = test;
+			b = std::min(b, v.getVal());
+			
+		}
+		for(unsigned int i = 0; i < possMoves.size(); i++) {
+			Board* b2 = currentBoard->copy();
+			b2->doMove(possMoves[i], otherSide);
+			Tuple test = absoluteAlphaBeta(b2, depth - 1, a, b, yourSide);
+			test.setMove(possMoves[i]);
+			
+ 			
+			
+			if(test.getVal() < v.getVal()) {
+				v = test;
+			}
+			b = std::min(b, v.getVal());
+			if(b <= a) {
+				break;
+			}
+		}
+		return v;
+	}
+}
 
+
+Tuple Player::alphaBeta(Board* currentBoard, int depth, int a, int b, Side yourPlayer) {
+	if(depth == 0) {
+
+		return Tuple(nullptr, currentBoard->weightedCount(yourSide) - currentBoard->weightedCount(otherSide));
+	
+	}
+	if(yourPlayer == yourSide) {
+		Tuple v = Tuple(nullptr,-10000);
+		std::vector<Move*> possMoves = makeListOfMoves(currentBoard, yourPlayer);
+		if(possMoves.size() == 0) {
+			Tuple test = alphaBeta(currentBoard, depth - 1, a, b, otherSide);
+			test.setMove(nullptr);
+			v = test;
+			a = std::max(a, v.getVal());
+
+		}
+		for(unsigned int i = 0; i < possMoves.size(); i++) {
+			Board* b2 = currentBoard->copy();
+			b2->doMove(possMoves[i], yourSide);
+			Tuple test = alphaBeta(b2, depth - 1, a, b, otherSide);
+			test.setMove(possMoves[i]);
+			
+
+			if(test.getVal() > v.getVal()) {
+				v = test;
+			}
+			a = std::max(a, v.getVal());
+			if(b <= a) {
+				break;
+			}
+
+		}
+		return v;
+	}
+	else {
+		Tuple v = Tuple(nullptr, 10000);
+		std::vector<Move*> possMoves = makeListOfMoves(currentBoard, otherSide);
+		if(possMoves.size() == 0) {
+			Tuple test = alphaBeta(currentBoard, depth - 1, a, b, yourSide);
+			test.setMove(nullptr);
+			v = test;
+			b = std::min(b, v.getVal());
+			
+		}
+		for(unsigned int i = 0; i < possMoves.size(); i++) {
+			Board* b2 = currentBoard->copy();
+			b2->doMove(possMoves[i], otherSide);
+			Tuple test = alphaBeta(b2, depth - 1, a, b, yourSide);
+			test.setMove(possMoves[i]);
+			
+ 			
+			
+			if(test.getVal() < v.getVal()) {
+				v = test;
+			}
+			b = std::min(b, v.getVal());
+			if(b <= a) {
+				break;
+			}
+		}
+		return v;
+	}
 }
 
 
@@ -182,6 +314,25 @@ Move * Player::minimax() {
  * This is for the minimax function.
  */
 
+// Move *Player::doMove(Move *opponentsMove, int msLeft) {
+
+// 	if(opponentsMove) {
+// 		b->doMove(opponentsMove, otherSide);
+// 	}
+// 	if(!b->hasMoves(yourSide)) {
+// 		return nullptr;
+// 	}
+	
+// 	Move * theMove = minimax();
+// 	b->doMove(theMove, yourSide);
+
+// 	return theMove;
+
+// }
+
+/*
+ *This is for the alpha beta pruning function.
+ */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
 	if(opponentsMove) {
@@ -190,8 +341,21 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 	if(!b->hasMoves(yourSide)) {
 		return nullptr;
 	}
-	
-	Move * theMove = minimax();
+	Move * theMove;
+	if(msLeft > 3000 || msLeft == -1) {
+		if(b->countBlack() + b->countWhite() >= 50)
+			theMove =   absoluteAlphaBeta(b, 6, -10000, 10000, yourSide).getMove();
+		else {
+			theMove = alphaBeta(b, 6, -10000, 10000, yourSide).getMove();
+		}
+	}
+	else {
+		if(b->countBlack() + b->countWhite() >= 50)
+			theMove =   absoluteAlphaBeta(b, 3, -10000, 10000, yourSide).getMove();
+		else
+			theMove = alphaBeta(b, 3, -10000, 10000, yourSide).getMove();
+	}
+
 	b->doMove(theMove, yourSide);
 
 	return theMove;

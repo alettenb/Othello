@@ -178,3 +178,64 @@ void Board::setBoard(char data[]) {
         }
     }
 }
+
+
+int Board::cornersOccupied(Side s) {
+    int cornersSoFar = 0;
+    if(get(s, 0, 0))
+        cornersSoFar++;
+    if(get(s, 0, 7))
+        cornersSoFar++;
+    if(get(s, 7, 7))
+        cornersSoFar++;
+    if(get(s, 7, 0))
+        cornersSoFar++;
+    return cornersSoFar;
+}
+
+int Board::weightedCount(Side s) {
+    int count = 0;
+    for(int x = 0; x < 8; x++) {
+        for(int y = 0; y < 8; y++) {
+            if(get(s, x, y)) {
+                if((x == 0 && y == 0) || (x == 7 && y == 0) 
+                    || (x == 0 && y == 7) || (x == 7 && y == 7))
+                    count += 100;
+                else if((x == 0 && (y == 1 || y == 6)) || 
+                    (x == 1 && (y == 0 ||  
+                         y == 7 )) || 
+                            (x == 6 && (y == 0 ||  
+                             y == 7 )) || 
+                            (x == 7 && (y == 1 || y == 6)))
+                    count -= 20;
+                else if((x == 1 && (y == 1 || y == 6)) ||
+                    (x == 6 && (y == 1 || y == 6)))
+                    count -= 50;
+                else if(x == 0 && (y == 2 || y == 5))
+                    count += 10;
+                else if(x == 7 && !(y == 2 || y == 5))
+                    count += 10;
+                else if(y == 0 && !(x == 2 || x == 5))
+                    count += 10;
+                else if(y == 7 && !(x == 2 || x == 5))
+                    count += 10;
+                else if(x == 0 && (y == 3 || y == 4))
+                    count += 5;
+                else if(x == 7 && !(y == 3 || y == 4))
+                    count += 5;
+                else if(y == 0 && !(x == 3 || x == 4))
+                    count += 5;
+                else if(y == 7 && !(x == 3 || x == 4))
+                    count += 5;
+                else if(x >= 2 && x <= 5 && y >= 2 && y <= 5) {
+                    count -= 1;
+                }
+                else {
+                    count -= 2;
+                }
+            }
+
+        }
+    }
+    return count;
+}

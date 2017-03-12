@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "common.hpp"
 #include "board.hpp"
 using namespace std;
@@ -19,9 +20,12 @@ public:
     Side yourSide;
     Side otherSide;
     bool testingMinimax;
-    std::vector<Move*> makeListOfMoves(Board * bo);
+    std::vector<Move*> makeListOfMoves(Board * bo, Side s);
     Move * minimax();
     int HeuristicFunction(Move* move, Side side, Side side2);
+    Tuple alphaBeta(Board* currentBoard, int depth, int a, int b, Side yourPlayer);
+	Tuple absoluteAlphaBeta(Board* currentBoard, int depth, int a, int b, Side yourPlayer);
+    bool onEdge(Move* move);
 };
 
 #endif
